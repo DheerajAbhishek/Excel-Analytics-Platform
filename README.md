@@ -1,23 +1,27 @@
-# Getting Started with Create React App
-
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# How to run the project
 
 ## Available Scripts
 
-In the project directory, you can run:
+To run the project navigate to frontend directory, you can run:
 
 ### `npm start`
 
 Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+you will be automatically redirected to the app webpage from the terminal in case you have'nt
+the open [http://localhost:3000](http://localhost:3000) to view it in your browser this will load the frontend part of project but the backend server has also need to be started.
 
 The page will reload when you make changes.\
 You may also see any lint errors in the console.
+
+### `node index.js`
+In a seperate terminal navigate to backend directory ans and run node index.js to start up the server. the server works on localhost:5000 but there is no need to open this seperately.
 
 ### `npm test`
 
 Launches the test runner in the interactive watch mode.\
 See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+
+
 
 ### `npm run build`
 
