@@ -1,8 +1,10 @@
-import logo from './logo.svg';
+import './App.css'
 import './styles.css';
 import Nav from './Nav';
 
 function App() {
+
+
   return (
     <div className="App">
       <Nav />
@@ -27,7 +29,7 @@ function App() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
