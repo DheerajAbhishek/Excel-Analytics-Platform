@@ -6,26 +6,6 @@ body {
 
 }
 
-.navbar {
-    background-color: #1D6F42;
-    color: white;
-    padding: 1rem;
-    text-align: left;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
-    height: 60px;
-    display: flex;
-    align-items: center;
-}
-
-.navbar-heading {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: bold;
-}
 
 .container {
     background: white;
@@ -36,6 +16,7 @@ body {
     /* Center the container */
     max-width: 400px;
     /* Limit the width */
+    max-height: fit-content;
 }
 
 h2 {

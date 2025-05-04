@@ -4,11 +4,12 @@
 
 To run the project navigate to frontend directory, you can run:
 
-### `npm start`
+### `npm run dev`
 
+This is a react+vite app 
 Runs the app in the development mode.\
 you will be automatically redirected to the app webpage from the terminal in case you have'nt
-the open [http://localhost:3000](http://localhost:3000) to view it in your browser this will load the frontend part of project but the backend server has also need to be started.
+the open [http://localhost:5173](http://localhost:3000) to view it in your browser this will load the frontend part of project but the backend server has also need to be started.
 
 The page will reload when you make changes.\
 You may also see any lint errors in the console.

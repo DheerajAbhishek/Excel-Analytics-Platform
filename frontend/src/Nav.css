@@ -1,0 +1,50 @@
+.navbar {
+    background-color: #1D6F42;
+    color: rgb(0, 0, 0);
+    padding: 1rem;
+    text-align: left;
+    width: 100%;
+    z-index: 1000;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.navbar-heading {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    color: white;
+}
+
+#login {
+    position: relative;
+    right: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#children {
+    position: relative;
+    right: 60px;
+
+}
+
+.button {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #000000;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: #28ad64;
+
+}

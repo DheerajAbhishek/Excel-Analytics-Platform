@@ -1,35 +1,20 @@
-import './App.css'
+import './App.css';
 import './styles.css';
-import Nav from './Nav';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';  // Import Router and Routes from react-router-dom
+import Dashboard from './Dashboard';
+import Home from './Home';
 
 function App() {
-
-
   return (
     <div className="App">
-      <Nav />
-      <div className="container">
-        <div className="form-container">
-          {/* Sign Up Form */}
-          <form id="signup-form" action={"http://localhost:5000/signup"} method="POST">
-            <h2>Sign Up</h2>
-            <input type="text" name="username" id="signup-username" placeholder="Username" required />
-            <input type="email" name="email" id="signup-email" placeholder="Email" required />
-            <input type="password" name="password" id="signup-password" placeholder="Password" required />
-            <button type="submit">Sign Up</button>
-          </form>
-
-          {/* Login Form */}
-          <form id="login-form">
-            <h2>Login</h2>
-            <input type="email" id="login-email" placeholder="Email" required />
-            <input type="password" id="login-password" placeholder="Password" required />
-            <button type="submit">Login</button>
-          </form>
-        </div>
-      </div>
+      <Home />
+      <Router>  {/* Wrap the app in Router */}
+        <Routes>
+          <Route path="/Dashboard" element={<Dashboard />} />  {/* Dashboard route */}
+        </Routes>
+      </Router>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

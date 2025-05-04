@@ -1,0 +1,11 @@
+.dashboard-container {
+    margin-left: 240px;
+    /* Same as sidebar width */
+    padding: 20px;
+}
+
+.dash-heading {
+    margin: 0px;
+    background-color: #1D6F42;
+    height: 90px;
+}

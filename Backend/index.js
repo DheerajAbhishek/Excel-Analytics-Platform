@@ -1,11 +1,16 @@
 const express = require("express");
 const app = express();
 const path = require("path")
+const cors = require("cors");
+const bcrypt = require("bcrypt");
+
+app.use(cors()); // ✅ Allow all origins (you can customize this later)
 
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static(path.join(__dirname, "FrontEnd")));
 app.use(express.static('public'));
 app.use(express.json());
+
 
 const mongoose = require("mongoose");
 const { stringify } = require("querystring");
@@ -21,23 +26,50 @@ const userschema = {
     password: String,
 
 }
-app.post("/signup", (req, res) => {
+const User = mongoose.model("Exeluser", userschema);
+app.post("/signup", async (req, res) => {
     const { userName, email, password } = req.body
-    const User = mongoose.model("Exeluser", userschema);
+
+    const hash = await bcrypt.hash(password, 10)
+    // Store hash in your password DB.
     const newUser = new User({
         userName: userName,
         email: email,
-        password: password
+        password: hash
     });
     console.log(newUser);
     newUser.save()
         .then(() => {
             console.log("User Created")
+            res.json({ message: "User Created" })
         })
         .catch((error) => {
             console.log("Error creating user", error)
         });
-    res.send("User Created")
+});
+
+
+
+app.post("/login", async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const foundUser = await User.findOne({ email: email });
+        console.log(foundUser);
+        if (foundUser) {
+            const isMatch = await bcrypt.compare(password, foundUser.password);
+            if (isMatch) {
+                console.log("Login successful");
+                res.json({ message: "Login successful", user: foundUser });
+            } else {
+                console.log("Invalid password");
+                res.status(401).json({ message: "Invalid password" });
+            }
+        }
+    } catch (error) {
+        console.error("Error finding user:", error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
 app.listen(5000, () => {
