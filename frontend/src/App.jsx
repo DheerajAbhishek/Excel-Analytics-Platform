@@ -4,16 +4,27 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';  // I
 import Dashboard from './Dashboard';
 import Home from './Home';
 
+
+
 function App() {
+
   return (
+
     <div className="App">
+
       <Home />
-      <Router>  {/* Wrap the app in Router */}
+      <Router>
+
         <Routes>
-          <Route path="/Dashboard" element={<Dashboard />} />  {/* Dashboard route */}
+          <Route path="/Dashboard" element={<Dashboard />} />
+          <Route path="/" element={<Home />} />
+          {/* Add more routes as needed */}
         </Routes>
+
       </Router>
+
     </div>
+
   );
 }
 

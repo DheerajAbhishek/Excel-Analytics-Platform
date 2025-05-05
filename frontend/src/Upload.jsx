@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import './Upload.css';
 import Sidebar from './Sidebar';
+import PieChart from './Piechart'; // Import the PieChart component
 
 export default function Upload() {
     const [fileName, setFileName] = useState('');
@@ -28,6 +29,7 @@ export default function Upload() {
         }
     };
 
+
     return (
         <><Sidebar />
 
@@ -37,6 +39,7 @@ export default function Upload() {
                 {fileName && <p>Uploaded: <strong>{fileName}</strong></p>}
                 {excelData && <pre>{JSON.stringify(excelData, null, 2)}</pre>}
             </div>
+            <PieChart /> {/* Pass the excelData to the PieChart component */}
         </>
     );
 }

@@ -3,7 +3,8 @@ import './styles.css';
 import Nav from './Nav';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import Dashboard from './Dashboard';
+import { useContext } from "react";
+import { UserContext } from "./UserContext";
 
 export default function Signup() {
     const [formData, setFormData] = useState({ userName: "", email: "", password: "" });
@@ -16,12 +17,14 @@ export default function Signup() {
             [name]: value
         }));
     };
+    const { setUser } = useContext(UserContext); // Access the setUser function from UserContext
 
     const handleSubmit = async (e) => {
         e.preventDefault(); // ✅ Prevent page reload
         try {
             const response = await axios.post('http://localhost:5000/signup', formData);
             console.log(response.data); // You can show a success message here
+            setUser(response.data.user); // Set the user data in state
             navigate('/Dashboard'); // Redirect to the dashboard after successful signup
         } catch (error) {
             console.error('Signup error:', error); // You can show an error message to the user
