@@ -30,7 +30,7 @@ export default function Sidebar() {
                     <Link to="/Dashboard" className="sidebar-link">Dashboard</Link>
                     <Link to="/Upload" className="sidebar-link">Upload</Link>
 
-                    <Link to="/" className="sidebar-link">Analyse Data</Link>
+                    <Link to="/Charts" className="sidebar-link">Analyse Data</Link>
                     <Link to="/" className="sidebar-link">History</Link>
                     <Link to="/" className="sidebar-link">Downloads</Link>
                     <Link to="/" className="sidebar-link">Theme</Link>
