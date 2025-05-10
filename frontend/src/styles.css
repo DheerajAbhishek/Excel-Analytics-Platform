@@ -3,9 +3,7 @@ body {
     background-color: #f4f4f4;
     margin: 0;
     padding: 0;
-
 }
-
 
 .container {
     background: white;
@@ -13,9 +11,7 @@ body {
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     margin: 120px auto;
-    /* Center the container */
     max-width: 400px;
-    /* Limit the width */
     max-height: fit-content;
 }
 

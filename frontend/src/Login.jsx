@@ -9,8 +9,7 @@ import { UserContext } from "./UserContext";
 
 export default function Login() {
     const [formData, setFormData] = useState({ email: "", password: "" });
-    const navigate = useNavigate();  // For navigation after successful login
-
+    const navigate = useNavigate();
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
@@ -25,52 +24,41 @@ export default function Login() {
         try {
 
             const response = await axios.post('http://localhost:5000/login', formData, { withCredentials: true });
-
-
             console.log(response.data);
-            const sessionActive = await axios.get('http://localhost:5000/check-session',
-                { withCredentials: true });
-
-            console.log(sessionActive);
-            console.log(sessionActive.data);
-            if (sessionActive.data.sessionActive) {
-                console.log("Session is active:", sessionActive.data.user);
-                setUser(response.data.user); // Set the user data in state
-                navigate('/Dashboard'); // Redirect to the Dashboard page (or wherever you want)
-            } else {
-                console.log("No active session"); // Log if no active session
-                navigate('/');
-            }
-
+            setUser(response.data.user); // Set the user data in state
+            navigate('/Dashboard'); // Redirect to the dashboard after successful login
         } catch (error) {
             console.error('Login error:', error);  // Handle error if login fails
-            // You can show an error message to the user if needed
+
         }
     };
-
     return (
-        <form id="login-form" onSubmit={handleSubmit}>
+        <>
             <Nav />
-            <h2>Login</h2>
-            <input
-                name="email"
-                type="email"
-                id="login-email"
-                placeholder="Email"
-                required
-                onChange={handleChange}
-                value={formData.email}
-            />
-            <input
-                name="password"
-                type="password"
-                id="login-password"
-                placeholder="Password"
-                required
-                onChange={handleChange}
-                value={formData.password}
-            />
-            <button type="submit">Login</button>
-        </form>
+            <div className="container">
+                <form id="login-form" onSubmit={handleSubmit}>
+                    <h2>Login</h2>
+                    <input
+                        name="email"
+                        type="email"
+                        id="login-email"
+                        placeholder="Email"
+                        required
+                        onChange={handleChange}
+                        value={formData.email}
+                    />
+                    <input
+                        name="password"
+                        type="password"
+                        id="login-password"
+                        placeholder="Password"
+                        required
+                        onChange={handleChange}
+                        value={formData.password}
+                    />
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+        </>
     );
 }

@@ -1,16 +1,13 @@
 import React, { useContext, useState } from 'react';
 import * as XLSX from 'xlsx';
 import './Upload.css';
+import "./head.css"
 import Sidebar from './Sidebar';
-// import PieChart from './Piechart'; // Import the PieChart component
-import Charts from './Charts';
 import { UserContext } from "./UserContext";
 import { useNavigate } from 'react-router-dom';
-
 export default function Upload() {
     const [fileName, setFileName] = useState('');
     const { setExcelData, excelData } = useContext(UserContext)
-
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
@@ -38,18 +35,20 @@ export default function Upload() {
     }
 
     return (
-        <><Sidebar />
+        <><div className='head'>
+            <h1 className='heading'>Upload</h1>
+        </div>
+            <Sidebar />
 
             <div className="upload-container">
                 <h2>Upload Excel File</h2>
-                <input type="file" accept=".xlsx,.xls" onChange={handleFileChange} />
-                {fileName && <p>Uploaded: <strong>{fileName}</strong></p>}
-                {excelData && <pre>{JSON.stringify(excelData, null, 2)}</pre>}
-                <button onClick={analyze}>Analyze data</button>
+                <div>
+                    <input type="file" accept=".xlsx,.xls" onChange={handleFileChange} /><br></br>
+                    {fileName && <p>Uploaded: <strong>{fileName}</strong></p>}
+                    {excelData && <pre>{JSON.stringify(excelData, null, 2)}</pre>}
+                </div>
+                <button className='analyse-button' onClick={analyze}>Analyze data</button>
             </div>
-
-
-
         </>
     );
 }

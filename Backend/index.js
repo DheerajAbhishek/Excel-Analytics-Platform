@@ -47,25 +47,29 @@ const userschema = {
 }
 const User = mongoose.model("Exeluser", userschema);
 app.post("/signup", async (req, res) => {
-    const { userName, email, password } = req.body
-
-    const hash = await bcrypt.hash(password, 10)
-    // Store hash in your password DB.
-    const newUser = new User({
-        userName: userName,
-        email: email,
-        password: hash
-    });
-    console.log(newUser);
-    newUser.save()
-        .then(() => {
-            console.log("User Created")
-            req.session.user = foundUser;
-            res.json({ message: "User Created", user: newUser, session: req.session.user });
-        })
-        .catch((error) => {
-            console.log("Error creating user", error)
+    const { userName, email, password } = req.body;
+    try {
+        const hash = await bcrypt.hash(password, 10);
+        const newUser = new User({
+            userName: userName,
+            email: email,
+            password: hash
         });
+        await newUser.save();
+        req.session.user = newUser;
+        // Ensure session is saved before sending response
+        req.session.save((err) => {
+            if (err) {
+                console.error("Session save error:", err);
+                return res.status(500).json({ message: "Session save failed" });
+            }
+            console.log("User Created and Session Saved");
+            res.json({ message: "User Created", user: newUser, session: req.session });
+        });
+    } catch (error) {
+        console.log("Error creating user", error);
+        res.status(500).json({ message: "Error creating user", error });
+    }
 });
 
 
