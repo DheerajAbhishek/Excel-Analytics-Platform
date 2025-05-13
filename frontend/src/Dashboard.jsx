@@ -59,21 +59,21 @@ export default function Dashboard() {
                         <FaFileAlt className="stat-icon" />
                         <div>
                             <p>Total Files</p>
-                            <h3>24</h3>
+                            <h3>--</h3>
                         </div>
                     </div>
                     <div className="stat-card">
                         <FaFileAlt className="stat-icon" />
                         <div>
                             <p>Storage Used</p>
-                            <h3>1.5 GB</h3>
+                            <h3>--</h3>
                         </div>
                     </div>
                     <div className="stat-card">
                         <FaFileAlt className="stat-icon" />
                         <div>
                             <p>Last Login</p>
-                            <h3>2025-05-10</h3>
+                            <h3>2025-05-12</h3>
                         </div>
                     </div>
                 </div>

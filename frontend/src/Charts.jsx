@@ -8,6 +8,7 @@ import {
     Tooltip,
     Legend
 } from 'chart.js';
+
 ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -18,7 +19,7 @@ ChartJS.register(
     Legend
 );
 
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import { UserContext } from "./UserContext";
 import { Pie, Bar } from 'react-chartjs-2';
 import './Charts.css';
@@ -30,6 +31,10 @@ export default function Charts() {
     const [chartType, setChartType] = useState("Bar");
     const [xAxisKey, setXAxisKey] = useState("");
     const [yAxisKey, setYAxisKey] = useState("");
+    const [scriptLoaded, setScriptLoaded] = useState(false);
+
+    const chartRef = useRef(null);  // Reference for the chart to access its methods
+    const chartInstanceRef = useRef(null);  // Reference to store chart instance
 
     const labels = excelData ? Object.keys(excelData[0]) : [];
     const xLabels = excelData?.map(item => item[xAxisKey]);
@@ -53,27 +58,72 @@ export default function Charts() {
         ]
     };
 
+    // Load AI script when data is available
     useEffect(() => {
-        if (excelData?.length) {
+        if (excelData?.length && !window.puter) {
             const script = document.createElement("script");
             script.src = "https://js.puter.com/v2/";
             script.async = true;
-            script.onload = () => {
-                const summaryBox = document.getElementById("ai-analysis");
-                summaryBox.innerText = "Analyzing data...";
 
-                window.puter.ai.chat(
-                    `Analyze this spreadsheet data and give me a short summary with trends or patterns:\n${JSON.stringify(excelData.slice(0, 20))}`
-                ).then((reply) => {
-                    summaryBox.innerText = reply;
-                }).catch(err => {
-                    summaryBox.innerText = "Failed to load analysis.";
-                    console.error(err);
-                });
-            };
+            script.onload = () => setScriptLoaded(true);
+            script.onerror = () => console.error("Failed to load AI script");
+
             document.body.appendChild(script);
+
+            return () => {
+                document.body.removeChild(script);
+            };
         }
     }, [excelData]);
+
+    // AI Insight handler
+    const getai = () => {
+        const summaryBox = document.getElementById("ai-analysis");
+
+        if (!scriptLoaded || !window.puter) {
+            summaryBox.innerText = "AI engine is not ready yet.";
+            return;
+        }
+
+        summaryBox.innerText = "Analyzing data...";
+
+        window.puter.ai.chat(
+            `Analyze this spreadsheet data and give me a short summary with trends or patterns:\n${JSON.stringify(excelData.slice(0, 20))}`
+        ).then((reply) => {
+            summaryBox.innerText = reply;
+        }).catch(err => {
+            summaryBox.innerText = "Failed to load analysis.";
+            console.error(err);
+        });
+    };
+
+    // Function to download chart as image
+    const downloadChart = () => {
+        if (chartRef.current) {
+            // Access chart instance through the ref
+            const chart = chartRef.current;
+
+            // Destroy any previous chart instance if it exists
+            if (chartInstanceRef.current) {
+                chartInstanceRef.current.destroy();
+            }
+
+            const imageUrl = chart.toBase64Image();
+            const a = document.createElement("a");
+            a.href = imageUrl;
+            a.download = `${chartType}-chart.png`;
+            a.click();
+        } else {
+            console.error("Chart reference is not available.");
+        }
+    };
+
+    useEffect(() => {
+        if (chartRef.current) {
+            // Store the chart instance for later destruction
+            chartInstanceRef.current = chartRef.current.chartInstance;
+        }
+    }, [chartRef]);
 
     return (
         <>
@@ -106,14 +156,19 @@ export default function Charts() {
 
                 {chartType === "Bar" && xLabels && yValues && (
                     <div className="pi">
-                        <Bar data={chartData} />
+                        <Bar ref={chartRef} data={chartData} />
                     </div>
                 )}
                 {chartType === "Pie" && xLabels && yValues && (
                     <div className="pi">
-                        <Pie data={chartData} />
+                        <Pie ref={chartRef} data={chartData} />
                     </div>
                 )}
+
+                {/* Download Button */}
+                <button onClick={downloadChart} style={{ marginTop: '20px', color: '#fff', backgroundColor: '#007bff', border: 'none', padding: '10px 20px', borderRadius: '5px', cursor: 'pointer' }}>
+                    Download Chart
+                </button>
 
                 {/* AI Analysis Section */}
                 <div style={{
@@ -124,8 +179,14 @@ export default function Charts() {
                     boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
                     width: "100%",
                 }}>
-                    <h3>📊 AI-Powered Insights</h3>
-                    <p id="ai-analysis" style={{ color: "#444", fontStyle: "italic" }}>Loading insight...</p>
+                    <h3>📊 AI-Powered Insights with Open AI</h3>
+                    <p
+                        id="ai-analysis"
+                        style={{ color: "#444", fontStyle: "italic", cursor: "pointer" }}
+                        onClick={getai}
+                    >
+                        Click to get AI analysis
+                    </p>
                 </div>
             </div>
         </>

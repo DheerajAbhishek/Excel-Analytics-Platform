@@ -58,6 +58,8 @@ export default function Login() {
                     />
                     <button type="submit">Login</button>
                 </form>
+                <hr /><br />
+                <button type="submit" onClick={() => navigate('/Signup')}>Create New Account</button>
             </div>
         </>
     );

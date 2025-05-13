@@ -45,7 +45,7 @@ export default function Upload() {
                 <div>
                     <input type="file" accept=".xlsx,.xls" onChange={handleFileChange} /><br></br>
                     {fileName && <p>Uploaded: <strong>{fileName}</strong></p>}
-                    {excelData && <pre>{JSON.stringify(excelData, null, 2)}</pre>}
+
                 </div>
                 <button className='analyse-button' onClick={analyze}>Analyze data</button>
             </div>
