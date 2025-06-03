@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import { UserContext } from "./UserContext";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { FaFileAlt, FaSignOutAlt, FaUserCircle } from "react-icons/fa";
+import { FaUserCircle } from "react-icons/fa";
 
 export default function Dashboard() {
     const { user, setUser } = useContext(UserContext);
@@ -32,8 +32,6 @@ export default function Dashboard() {
         checkSession();
     }, []);
 
-
-
     return (
         <>
             <div className='head'>
@@ -51,43 +49,19 @@ export default function Dashboard() {
                             <p>{user?.email}</p>
                         </div>
                     </div>
-
                 </div>
 
-                <div className="dashboard-stats">
-                    <div className="stat-card">
-                        <FaFileAlt className="stat-icon" />
-                        <div>
-                            <p>Total Files</p>
-                            <h3>--</h3>
-                        </div>
-                    </div>
-                    <div className="stat-card">
-                        <FaFileAlt className="stat-icon" />
-                        <div>
-                            <p>Storage Used</p>
-                            <h3>--</h3>
-                        </div>
-                    </div>
-                    <div className="stat-card">
-                        <FaFileAlt className="stat-icon" />
-                        <div>
-                            <p>Last Login</p>
-                            <h3>2025-05-12</h3>
-                        </div>
+                <div className="dashboard-actions">
+                    <h2>Get Started</h2>
+                    <div className="action-buttons">
+                        <button onClick={() => navigate('/upload')}>📤 Upload Excel File</button>
+                        <button onClick={() => navigate('/upload')}>📊 Start Analysis</button>
+
                     </div>
                 </div>
 
-                <div className="user-info">
-                    <h2>User Information</h2>
-                    {user ? (
-                        <div className="user-details">
-                            <p><strong>Name:</strong> {user.userName}</p>
-                            <p><strong>Email:</strong> {user.email}</p>
-                        </div>
-                    ) : (
-                        <p>No user information available.</p>
-                    )}
+                <div className="privacy-note">
+                    <p>🔒 We respect your privacy. No user data is stored — only your login credentials are used for authentication.</p>
                 </div>
             </div>
         </>

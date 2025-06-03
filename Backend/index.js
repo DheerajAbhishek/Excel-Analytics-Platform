@@ -43,6 +43,7 @@ const userschema = {
     userName: String,
     email: String,
     password: String,
+    role: String,
 
 }
 const User = mongoose.model("Exeluser", userschema);
@@ -53,7 +54,8 @@ app.post("/signup", async (req, res) => {
         const newUser = new User({
             userName: userName,
             email: email,
-            password: hash
+            password: hash,
+            role: "user",
         });
         await newUser.save();
         req.session.user = newUser;
@@ -80,21 +82,26 @@ app.post("/login", async (req, res) => {
     try {
         const foundUser = await User.findOne({ email: email });
         console.log(foundUser);
+
         if (foundUser) {
             const isMatch = await bcrypt.compare(password, foundUser.password);
             if (isMatch) {
                 console.log("Login successful");
                 req.session.user = foundUser;
-                res.json({ message: "Login successful", user: foundUser, session: req.session });
+                res.status(200).json({ message: "Login successful", user: foundUser, session: req.session });
             } else {
                 console.log("Invalid password");
                 res.status(401).json({ message: "Invalid password" });
             }
+        } else {
+            console.log("User not found");
+            res.status(404).json({ message: "User not found" });
         }
     } catch (error) {
-        console.error("Error finding user:", error);
-        res.status(500).send("Internal Server Error");
+        console.error("Login error:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
+
 });
 app.get('/check-session', (req, res) => {
     if (req.session.user) {
@@ -116,3 +123,36 @@ app.get('/logout', (req, res) => {
 app.listen(5000, () => {
     console.log("server is running on port 5000")
 });
+app.get('/all-users', async (req, res) => {
+    try {
+        const users = await User.find({});
+        res.status(200).json(users);
+    } catch (err) {
+        console.error("Error fetching users:", err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+app.post("/toUser", async (req, res) => {
+
+    console.log(req.body)
+    const update = await User.updateOne(req.body, { $set: { role: "user" } })
+    res.status(200).json({ success: true });
+
+    console.log(update)
+})
+app.post("/toAdmin", async (req, res) => {
+
+    console.log(req.body)
+    const update = await User.updateOne(req.body, { $set: { role: "admin" } })
+    res.status(200).json({ success: true });
+
+    console.log(update)
+})
+app.post("/delete", async (req, res) => {
+
+    console.log(req.body)
+    const update = await User.deleteOne(req.body)
+    res.status(200).json({ success: true });
+
+    console.log(update)
+})

@@ -25,20 +25,24 @@ import { Pie, Bar } from 'react-chartjs-2';
 import './Charts.css';
 import './head.css';
 import Sidebar from './Sidebar';
+import axios from 'axios';
+import Plotly from 'plotly.js-dist';
 
 export default function Charts() {
     const { excelData } = useContext(UserContext);
     const [chartType, setChartType] = useState("Bar");
     const [xAxisKey, setXAxisKey] = useState("");
     const [yAxisKey, setYAxisKey] = useState("");
+    const [zAxisKey, setZAxisKey] = useState(""); // <-- New
     const [scriptLoaded, setScriptLoaded] = useState(false);
 
-    const chartRef = useRef(null);  // Reference for the chart to access its methods
-    const chartInstanceRef = useRef(null);  // Reference to store chart instance
+    const chartRef = useRef(null);
+    const chartInstanceRef = useRef(null);
 
     const labels = excelData ? Object.keys(excelData[0]) : [];
     const xLabels = excelData?.map(item => item[xAxisKey]);
     const yValues = excelData?.map(item => Number(item[yAxisKey]));
+    const zValues = excelData?.map(item => Number(item[zAxisKey]));
 
     const chartData = {
         labels: xLabels,
@@ -58,7 +62,6 @@ export default function Charts() {
         ]
     };
 
-    // Load AI script when data is available
     useEffect(() => {
         if (excelData?.length && !window.puter) {
             const script = document.createElement("script");
@@ -69,14 +72,10 @@ export default function Charts() {
             script.onerror = () => console.error("Failed to load AI script");
 
             document.body.appendChild(script);
-
-            return () => {
-                document.body.removeChild(script);
-            };
+            return () => document.body.removeChild(script);
         }
     }, [excelData]);
 
-    // AI Insight handler
     const getai = () => {
         const summaryBox = document.getElementById("ai-analysis");
 
@@ -97,17 +96,12 @@ export default function Charts() {
         });
     };
 
-    // Function to download chart as image
     const downloadChart = () => {
         if (chartRef.current) {
-            // Access chart instance through the ref
             const chart = chartRef.current;
-
-            // Destroy any previous chart instance if it exists
             if (chartInstanceRef.current) {
                 chartInstanceRef.current.destroy();
             }
-
             const imageUrl = chart.toBase64Image();
             const a = document.createElement("a");
             a.href = imageUrl;
@@ -120,72 +114,116 @@ export default function Charts() {
 
     useEffect(() => {
         if (chartRef.current) {
-            // Store the chart instance for later destruction
             chartInstanceRef.current = chartRef.current.chartInstance;
         }
     }, [chartRef]);
 
+    useEffect(() => {
+        if (
+            chartType === "3DScatter" &&
+            xAxisKey &&
+            yAxisKey &&
+            zAxisKey &&
+            excelData?.length
+        ) {
+            const xValues = excelData.map(item => item[xAxisKey]);
+            const yValues = excelData.map(item => Number(item[yAxisKey]));
+            const zValues = excelData.map(item => Number(item[zAxisKey]));
+
+            const trace = {
+                type: 'scatter3d',
+                mode: 'markers',
+                x: xValues,
+                y: yValues,
+                z: zValues,
+                marker: {
+                    size: 5,
+                    color: zValues,
+                    colorscale: 'Viridis'
+                }
+            };
+
+            const layout = {
+                margin: { l: 0, r: 0, b: 0, t: 0 },
+                scene: {
+                    xaxis: { title: xAxisKey },
+                    yaxis: { title: yAxisKey },
+                    zaxis: { title: zAxisKey }
+                }
+            };
+
+            Plotly.newPlot('plotly-chart', [trace], layout);
+        }
+    }, [chartType, xAxisKey, yAxisKey, zAxisKey, excelData]);
+
     return (
         <>
-            <div className='head'>
-                <h1 className='heading'>Analysis</h1>
+            <div className="head">
+                <h1 className="heading">📊 Data Analysis</h1>
             </div>
             <Sidebar />
+
             <div className="charts">
-                <h4>Select the type of graph</h4>
-                <select value={chartType} onChange={(e) => setChartType(e.target.value)}>
-                    <option value="Bar">Bar Chart</option>
-                    <option value="Pie">Pie Chart</option>
-                </select><br />
+                <div className="card">
+                    <h4>Select Chart Type</h4>
+                    <select value={chartType} onChange={(e) => setChartType(e.target.value)}>
+                        <option value="Bar">Bar Chart</option>
+                        <option value="Pie">Pie Chart</option>
+                        <option value="3DScatter">3D Scatter Chart</option>
+                    </select>
 
-                <h4>Specify x-axis</h4>
-                <select value={xAxisKey} onChange={(e) => setXAxisKey(e.target.value)}>
-                    <option value="">Select X-axis</option>
-                    {labels.map((label, index) => (
-                        <option key={index} value={label}>{label}</option>
-                    ))}
-                </select>
+                    <h4>Select X-Axis</h4>
+                    <select value={xAxisKey} onChange={(e) => setXAxisKey(e.target.value)}>
+                        <option value="">X-axis</option>
+                        {labels.map((label, index) => (
+                            <option key={index} value={label}>{label}</option>
+                        ))}
+                    </select>
 
-                <h4>Select Y-axis</h4>
-                <select value={yAxisKey} onChange={(e) => setYAxisKey(e.target.value)}>
-                    <option value="">Select Y-axis</option>
-                    {labels.map((label, index) => (
-                        <option key={index} value={label}>{label}</option>
-                    ))}
-                </select>
+                    <h4>Select Y-Axis</h4>
+                    <select value={yAxisKey} onChange={(e) => setYAxisKey(e.target.value)}>
+                        <option value="">Y-axis</option>
+                        {labels.map((label, index) => (
+                            <option key={index} value={label}>{label}</option>
+                        ))}
+                    </select>
 
-                {chartType === "Bar" && xLabels && yValues && (
-                    <div className="pi">
+                    {chartType === "3DScatter" && (
+                        <>
+                            <h4>Select Z-Axis</h4>
+                            <select value={zAxisKey} onChange={(e) => setZAxisKey(e.target.value)}>
+                                <option value="">Z-axis</option>
+                                {labels.map((label, index) => (
+                                    <option key={index} value={label}>{label}</option>
+                                ))}
+                            </select>
+                        </>
+                    )}
+                </div>
+
+                <div className="chart-preview">
+                    <h4>🔍 Chart Preview</h4>
+
+                    {chartType === "Bar" ? (
                         <Bar ref={chartRef} data={chartData} />
-                    </div>
-                )}
-                {chartType === "Pie" && xLabels && yValues && (
-                    <div className="pi">
+                    ) : chartType === "Pie" ? (
                         <Pie ref={chartRef} data={chartData} />
-                    </div>
-                )}
 
-                {/* Download Button */}
-                <button onClick={downloadChart} style={{ marginTop: '20px', color: '#fff', backgroundColor: '#007bff', border: 'none', padding: '10px 20px', borderRadius: '5px', cursor: 'pointer' }}>
-                    Download Chart
-                </button>
+                    ) : chartType === "3DScatter" ? (
+                        <div id="plotly-chart" style={{ width: '100%', height: '400px' }}></div>
+                    ) : null}
 
-                {/* AI Analysis Section */}
-                <div style={{
-                    background: "#f9f9f9",
-                    marginTop: "2rem",
-                    padding: "1rem",
-                    borderRadius: "8px",
-                    boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
-                    width: "100%",
-                }}>
-                    <h3>📊 AI-Powered Insights with Open AI</h3>
-                    <p
-                        id="ai-analysis"
-                        style={{ color: "#444", fontStyle: "italic", cursor: "pointer" }}
-                        onClick={getai}
-                    >
-                        Click to get AI analysis
+                    {chartType !== "3DScatter" && (
+                        <button className="download-btn" onClick={downloadChart}>
+                            ⬇️ Download Chart
+                        </button>
+                    )}
+                </div>
+
+                <div className="ai-box">
+                    <h3>🤖 AI-Powered Insights</h3>
+                    <p id="ai-analysis" className="ai-trigger" onClick={getai}>
+                        Click to generate insights with OpenAI
                     </p>
                 </div>
             </div>

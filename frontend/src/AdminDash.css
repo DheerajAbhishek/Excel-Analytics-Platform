@@ -1,0 +1,71 @@
+.user-table {
+    margin: 20px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.user-table h2 {
+    margin-bottom: 10px;
+}
+
+.user-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.user-table th,
+.user-table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+}
+
+.user-table th {
+    background-color: #f5f5f5;
+}
+
+.actionbtn {
+    width: 60%;
+    padding: 10px;
+    background-color: #1D6F42;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.adminHeading {
+    position: relative;
+    top: 38px;
+}
+
+.head {
+    display: flex;
+    justify-content: space-between;
+}
+
+.headbtn {
+    width: fit-content;
+    padding: 10px;
+    background-color: white;
+    color: #1D6F42;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+}
+
+.right-div {
+    height: fit-content;
+    width: 230px;
+    display: flex;
+    justify-content: space-around;
+    position: relative;
+    top: 32px;
+}

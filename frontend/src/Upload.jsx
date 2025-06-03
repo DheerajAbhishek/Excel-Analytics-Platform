@@ -39,15 +39,34 @@ export default function Upload() {
             <h1 className='heading'>Upload</h1>
         </div>
             <Sidebar />
+            <div className='main'>
 
-            <div className="upload-container">
-                <h2>Upload Excel File</h2>
-                <div>
-                    <input type="file" accept=".xlsx,.xls" onChange={handleFileChange} /><br></br>
-                    {fileName && <p>Uploaded: <strong>{fileName}</strong></p>}
 
-                </div>
-                <button className='analyse-button' onClick={analyze}>Analyze data</button>
+                <label htmlFor="file-upload">
+                    <div className="upload-container">
+                        <h2 className="upload-heading">📂 Upload Excel File</h2>
+
+                        <div className="upload-box">
+                            <p>Drag & drop your Excel file here,<br />or click to browse</p>
+                            <input id='file-upload' type="file" accept=".xlsx,.xls" onChange={handleFileChange} />
+                            {fileName && (
+                                <p className="file-name">
+                                    ✅ Uploaded: <strong>{fileName}</strong>
+                                </p>
+                            )}
+                        </div>
+
+                        <button className="analyse-button" onClick={analyze}>
+                            🔍 Analyze Data
+                        </button>
+                    </div>
+                </label><br />
+                <p className="sample-download">
+                    Don't have a file? 👉{' '}
+                    <a href="/sales_data_sample.xlsx" download>
+                        Download Sample Excel File
+                    </a>
+                </p>
             </div>
         </>
     );

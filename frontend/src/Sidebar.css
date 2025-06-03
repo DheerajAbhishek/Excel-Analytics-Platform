@@ -67,3 +67,36 @@
     background-color: #f9fafb;
     min-height: 100vh;
 }
+
+/* Dark mode overrides */
+.dark .sidebar {
+    background: linear-gradient(180deg, #121212 0%, #1e1e1e 100%);
+    border: 5px solid #388e3c;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.8);
+}
+
+.dark .sidebar img {
+    filter: brightness(0) invert(1);
+    /* Makes logo visible on dark background */
+}
+
+.dark .sidebar-link {
+    color: #a5d6a7;
+    background-color: transparent;
+}
+
+.dark .sidebar-link:hover {
+    background-color: #2a4d2a;
+    color: #c8e6c9;
+    box-shadow: inset 2px 2px 5px rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+}
+
+.dark .content {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+button {
+    border: solid #121212;
+}

@@ -3,11 +3,11 @@ import "./styles.css";
 import Nav from "./Nav";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Link } from 'react-router-dom';
+
 import { useContext } from "react";
 import { UserContext } from "./UserContext";
 
-export default function Login() {
+export default function Admin() {
     const [formData, setFormData] = useState({ email: "", password: "" });
     const navigate = useNavigate();
     const handleChange = (e) => {
@@ -24,22 +24,16 @@ export default function Login() {
         try {
 
             const response = await axios.post('http://localhost:5000/login', formData, { withCredentials: true });
-
+            console.log(response.data);
             setUser(response.data.user); // Set the user data in state
-            if (response.status === 200) {
-                console.log("Login successful");
-                navigate('/Dashboard'); // Redirect to the dashboard after successful login
+            if (response.data.user.role == "admin") {
+                navigate('/AdminDash'); // Redirect to the dashboard after successful login
             }
-            else if (response.status !== 200) {
-                alert("User not found")
+            else {
+                alert("Not an admin")
             }
         } catch (error) {
             console.error('Login error:', error);  // Handle error if login fails
-            if (error.response.status === 404) {
-                alert("Invalid email or password");
-            } else {
-                alert("An error occurred during login. Please try again.");
-            }
 
         }
     };
@@ -48,7 +42,7 @@ export default function Login() {
             <Nav />
             <div className="container">
                 <form id="login-form" onSubmit={handleSubmit}>
-                    <h2>Login</h2>
+                    <h2>Admin Login</h2>
                     <input
                         name="email"
                         type="email"
@@ -69,9 +63,8 @@ export default function Login() {
                     />
                     <button type="submit">Login</button>
                 </form>
-                <hr /><br />
-                <button type="submit" onClick={() => navigate('/Signup')}>Create New Account</button>
-                <Link to="/Admin">Login as admin</Link>
+
+
             </div>
         </>
     );
