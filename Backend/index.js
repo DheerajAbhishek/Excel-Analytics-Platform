@@ -51,18 +51,26 @@ app.use(express.static('public'));
 app.use(express.json());
 
 
+
+
 const mongoose = require("mongoose");
 const { stringify } = require("querystring");
 const { isNull } = require("util");
 const { stat } = require("fs");
+mongoose.set("strictQuery", false);
 require('dotenv').config();
 
-mongoose.connect(process.env.MONGO_URI)
+
+
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
     .then(() => {
         console.log("✅ Connected to MongoDB Atlas");
     })
     .catch((error) => {
-        console.log("❌ Connection failed:", error);
+        console.error("❌ MongoDB connection error:", error);
     });
 
 const userschema = {
