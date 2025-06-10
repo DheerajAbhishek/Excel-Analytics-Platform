@@ -56,7 +56,6 @@ app.use(express.json());
 
 
 
-const mongoose = require("mongoose");
 const { stringify } = require("querystring");
 const { isNull } = require("util");
 const { stat } = require("fs");
