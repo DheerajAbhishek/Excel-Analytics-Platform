@@ -35,11 +35,14 @@ const mongoose = require("mongoose");
 const { stringify } = require("querystring");
 const { isNull } = require("util");
 const { stat } = require("fs");
-mongoose.connect('mongodb://127.0.0.1:27017/exelDB')
+mongoose.connect(process.env.MONGO_URI)
     .then(() => {
-        console.log("GOT CONNECTION")
+        console.log("✅ Connected to MongoDB Atlas");
     })
-    .catch((error) => console.log("oh on falied", error));
+    .catch((error) => {
+        console.log("❌ Connection failed:", error);
+    });
+
 const userschema = {
     userName: String,
     email: String,
