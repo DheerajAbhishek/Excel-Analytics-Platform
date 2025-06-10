@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const path = require("path")
 const cors = require("cors");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const session = require("express-session");
 
 
