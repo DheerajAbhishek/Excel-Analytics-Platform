@@ -194,6 +194,6 @@ app.post("/delete", async (req, res) => {
     console.log(update)
 })
 // 👇 PLACE THIS ONLY AFTER ALL ROUTES ABOVE
-app.get("*", (req, res) => {
+app.get("/*splat", (req, res) => {
     res.sendFile(path.join(__dirname, "frontend-build/index.html"));
 });
