@@ -2,15 +2,17 @@ const express = require("express");
 const app = express();
 const path = require("path");
 const bcrypt = require("bcryptjs");
-
-const cors = require("cors");
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
 const mongoose = require("mongoose");
-require("dotenv").config(); // Load env variables
+const cors = require("cors");
 
-// --- CORS Setup ---
+require("dotenv").config();
+
+// -------------------- CORS Setup --------------------
 const allowedOrigins = [
-    "http://localhost:5173", // Local dev
-    "https://excel-analytics-platform.vercel.app", // Production
+    "http://localhost:5173",
+    "https://excel-analytics-platform.vercel.app",
 ];
 
 const dynamicOrigin = (origin, callback) => {
@@ -25,58 +27,58 @@ const dynamicOrigin = (origin, callback) => {
     }
 };
 
-app.use(cors({
-    origin: dynamicOrigin,
-    credentials: true,
-}));
+app.use(
+    cors({
+        origin: dynamicOrigin,
+        credentials: true,
+    })
+);
 
-// --- Session Setup ---
-const session = require("express-session");
-const MongoStore = require("connect-mongo");
-
-app.set("trust proxy", 1); // Needed when using Render or any proxy
-
-app.use(session({
-    secret: "your-secret", // use process.env.SECRET in production
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-        mongoUrl: process.env.MONGO_URI,
-        ttl: 60 * 60, // 1 hour
-    }),
-    cookie: {
-        httpOnly: true,
-        secure: true, // must be true when using HTTPS (Render uses HTTPS)
-        sameSite: "none", // "none" is needed for cross-origin with HTTPS
-        maxAge: 1000 * 60 * 60, // 1 hour
-    }
-}));
-
-
-// --- Middleware ---
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "FrontEnd")));
-app.use(express.static('public'));
-app.use(express.json());
-
-// --- MongoDB Connection ---
-mongoose.connect(process.env.MONGO_URI)
+// -------------------- MongoDB Connection --------------------
+mongoose
+    .connect(process.env.MONGO_URI)
     .then(() => console.log("✅ Connected to MongoDB Atlas"))
-    .catch((error) => console.log("❌ Connection failed:", error));
+    .catch((err) => console.log("❌ Connection failed:", err));
 
-// --- MongoDB Schema ---
-const userschema = {
+// -------------------- Session Setup --------------------
+const isProduction = process.env.NODE_ENV === "production";
+app.set("trust proxy", 1); // Required on Render
+
+app.use(
+    session({
+        secret: process.env.SECRET || "your-secret",
+        resave: false,
+        saveUninitialized: false,
+        store: MongoStore.create({
+            mongoUrl: process.env.MONGO_URI,
+            ttl: 60 * 60, // 1 hour
+        }),
+        cookie: {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
+            maxAge: 1000 * 60 * 60,
+        },
+    })
+);
+
+// -------------------- Middleware --------------------
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "FrontEnd")));
+app.use(express.static("public"));
+
+// -------------------- Mongoose User Model --------------------
+const userSchema = {
     userName: String,
     email: String,
     password: String,
     role: String,
 };
 
-const User = mongoose.model("Exeluser", userschema);
+const User = mongoose.model("Exeluser", userSchema);
 
-// --- Routes ---
-
-// Signup
+// -------------------- Routes --------------------
 app.post("/signup", async (req, res) => {
     const { userName, email, password } = req.body;
     try {
@@ -90,42 +92,33 @@ app.post("/signup", async (req, res) => {
         await newUser.save();
         req.session.user = newUser;
         req.session.save((err) => {
-            if (err) {
-                console.error("Session save error:", err);
-                return res.status(500).json({ message: "Session save failed" });
-            }
-            console.log("User Created and Session Saved");
+            if (err) return res.status(500).json({ message: "Session save failed" });
             res.json({ message: "User Created", user: newUser, session: req.session });
         });
     } catch (error) {
-        console.log("Error creating user", error);
         res.status(500).json({ message: "Error creating user", error });
     }
 });
 
-// Login
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
     try {
         const foundUser = await User.findOne({ email });
-        if (foundUser) {
-            const isMatch = await bcrypt.compare(password, foundUser.password);
-            if (isMatch) {
-                req.session.user = foundUser;
-                res.status(200).json({ message: "Login successful", user: foundUser, session: req.session });
-            } else {
-                res.status(401).json({ message: "Invalid password" });
-            }
-        } else {
-            res.status(404).json({ message: "User not found" });
-        }
+        if (!foundUser) return res.status(404).json({ message: "User not found" });
+
+        const isMatch = await bcrypt.compare(password, foundUser.password);
+        if (!isMatch) return res.status(401).json({ message: "Invalid password" });
+
+        req.session.user = foundUser;
+        req.session.save((err) => {
+            if (err) return res.status(500).json({ message: "Session save failed" });
+            res.status(200).json({ message: "Login successful", user: foundUser, session: req.session });
+        });
     } catch (error) {
-        console.error("Login error:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 });
 
-// Session Check
 app.get("/check-session", (req, res) => {
     if (req.session.user) {
         res.json({ sessionActive: true, user: req.session.user });
@@ -134,54 +127,39 @@ app.get("/check-session", (req, res) => {
     }
 });
 
-// Logout
 app.get("/logout", (req, res) => {
     req.session.destroy((err) => {
-        if (err) {
-            console.error("Error destroying session:", err);
-            return res.status(500).send("Internal Server Error");
-        }
+        if (err) return res.status(500).send("Error destroying session");
         res.clearCookie("connect.sid");
         res.json({ message: "Logout successful", status: 200 });
     });
 });
 
-// Get All Users
 app.get("/all-users", async (req, res) => {
     try {
         const users = await User.find({});
         res.status(200).json(users);
     } catch (err) {
-        console.error("Error fetching users:", err);
         res.status(500).json({ message: "Internal server error" });
     }
 });
 
-// Change Role to User
 app.post("/toUser", async (req, res) => {
-    console.log(req.body);
     const update = await User.updateOne(req.body, { $set: { role: "user" } });
-    console.log(update);
-    res.status(200).json({ success: true });
+    res.status(200).json({ success: true, update });
 });
 
-// Change Role to Admin
 app.post("/toAdmin", async (req, res) => {
-    console.log(req.body);
     const update = await User.updateOne(req.body, { $set: { role: "admin" } });
-    console.log(update);
-    res.status(200).json({ success: true });
+    res.status(200).json({ success: true, update });
 });
 
-// Delete User
 app.post("/delete", async (req, res) => {
-    console.log(req.body);
     const update = await User.deleteOne(req.body);
-    console.log(update);
-    res.status(200).json({ success: true });
+    res.status(200).json({ success: true, update });
 });
 
-// --- Start Server ---
+// -------------------- Server --------------------
 app.listen(5000, () => {
     console.log("🚀 Server is running on port 5000");
 });
