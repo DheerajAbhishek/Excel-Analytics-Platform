@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const path = require("path");
 const bcrypt = require("bcryptjs");
-const session = require("express-session");
+
 const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config(); // Load env variables
@@ -31,15 +31,23 @@ app.use(cors({
 }));
 
 // --- Session Setup ---
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
+
 app.use(session({
-    secret: "your-secret", // replace in production with process.env.SESSION_SECRET
+    secret: "your-secret", // or use process.env.SESSION_SECRET
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URI,
+        ttl: 60 * 60, // 1 hour
+        autoRemove: 'native', // Let MongoDB clean expired sessions
+    }),
     cookie: {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // only secure over HTTPS in production
+        secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: 1000 * 60 * 60 // 1 hour
+        maxAge: 1000 * 60 * 60, // 1 hour
     }
 }));
 
