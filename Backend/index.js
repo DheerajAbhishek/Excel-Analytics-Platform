@@ -1,77 +1,66 @@
 const express = require("express");
-const cors = require("cors");
-const session = require("express-session");
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const path = require("path"); // ✅ Added!
-
 const app = express();
+const path = require("path")
 
-require('dotenv').config();
+const bcrypt = require("bcryptjs");
+const session = require("express-session");
 
-// CORS configuration
+
+
+const cors = require("cors");
+
 const allowedOrigins = [
-    "http://localhost:5173",
-    "https://excel-analytics-platform.vercel.app",
-    "https://excel-analytics-platform-6hhl.vercel.app",
+    "http://localhost:5173", // for local dev
+    "https://excel-analytics-platform.vercel.app", // production
 ];
 
-const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
-            callback(null, true);
-        } else {
-            callback(new Error("CORS error: " + origin));
-        }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+// Optional: allow any Vercel preview URLs (wildcard match)
+const dynamicOrigin = (origin, callback) => {
+    if (
+        !origin || // allow same-origin requests
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app") // allow all Vercel preview domains
+    ) {
+        callback(null, true);
+    } else {
+        callback(new Error("Not allowed by CORS: " + origin));
+    }
 };
 
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+app.use(cors({
+    origin: dynamicOrigin,
+    credentials: true,
+}));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Session configuration
 app.use(session({
     secret: "your-secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
         httpOnly: true,
-        secure: true, // Required for cross-origin cookies
-        sameSite: 'none',
-        maxAge: 1000 * 60 * 60,
-    },
+        secure: false, // true only in production with HTTPS
+        sameSite: 'lax', // or 'none' if secure:true and HTTPS
+        maxAge: 1000 * 60 * 60 // 1 hour
+    }
 }));
 
-app.use(express.static(path.join(__dirname, "frontend-build")));
+app.use(express.urlencoded({ extended: true }))
+app.use(express.static(path.join(__dirname, "FrontEnd")));
+app.use(express.static('public'));
+app.use(express.json());
 
 
-
-
-
-
+const mongoose = require("mongoose");
 const { stringify } = require("querystring");
 const { isNull } = require("util");
 const { stat } = require("fs");
-mongoose.set("strictQuery", false);
-require('dotenv').config();
-
-
-
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         console.log("✅ Connected to MongoDB Atlas");
     })
     .catch((error) => {
-        console.error("❌ MongoDB connection error:", error);
+        console.log("❌ Connection failed:", error);
     });
 
 const userschema = {
@@ -155,11 +144,9 @@ app.get('/logout', (req, res) => {
         res.json({ message: "Logout successful", status: 200 });
     });
 });
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
+app.listen(5000, () => {
+    console.log("server is running on port 5000")
 });
-
 app.get('/all-users', async (req, res) => {
     try {
         const users = await User.find({});
@@ -193,7 +180,3 @@ app.post("/delete", async (req, res) => {
 
     console.log(update)
 })
-// 👇 PLACE THIS ONLY AFTER ALL ROUTES ABOVE
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "frontend-build/index.html"));
-});
