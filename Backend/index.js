@@ -8,11 +8,22 @@ const session = require("express-session");
 
 
 const cors = require("cors");
-
 const allowedOrigins = [
     "http://localhost:5173", // for local dev
     "https://excel-analytics-platform.vercel.app", // production
 ];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: true // 👈 This is what allows the session cookie to be sent
+}));
+
 
 // Optional: allow any Vercel preview URLs (wildcard match)
 const dynamicOrigin = (origin, callback) => {
