@@ -1,25 +1,23 @@
 const express = require("express");
 const app = express();
-const path = require("path")
-
+const path = require("path");
 const bcrypt = require("bcryptjs");
 const session = require("express-session");
-
-
-
 const cors = require("cors");
+const mongoose = require("mongoose");
+require("dotenv").config(); // Load env variables
 
+// --- CORS Setup ---
 const allowedOrigins = [
-    "http://localhost:5173", // for local dev
-    "https://excel-analytics-platform.vercel.app", // production
+    "http://localhost:5173", // Local dev
+    "https://excel-analytics-platform.vercel.app", // Production
 ];
 
-// Optional: allow any Vercel preview URLs (wildcard match)
 const dynamicOrigin = (origin, callback) => {
     if (
-        !origin || // allow same-origin requests
+        !origin ||
         allowedOrigins.includes(origin) ||
-        origin.endsWith(".vercel.app") // allow all Vercel preview domains
+        origin.endsWith(".vercel.app")
     ) {
         callback(null, true);
     } else {
@@ -32,58 +30,55 @@ app.use(cors({
     credentials: true,
 }));
 
-
+// --- Session Setup ---
 app.use(session({
-    secret: "your-secret",
+    secret: "your-secret", // replace in production with process.env.SESSION_SECRET
     resave: false,
     saveUninitialized: false,
     cookie: {
         httpOnly: true,
-        secure: false, // true only in production with HTTPS
-        sameSite: 'lax', // or 'none' if secure:true and HTTPS
+        secure: process.env.NODE_ENV === "production", // only secure over HTTPS in production
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 1000 * 60 * 60 // 1 hour
     }
 }));
 
-app.use(express.urlencoded({ extended: true }))
+// --- Middleware ---
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "FrontEnd")));
 app.use(express.static('public'));
 app.use(express.json());
 
-
-const mongoose = require("mongoose");
-const { stringify } = require("querystring");
-const { isNull } = require("util");
-const { stat } = require("fs");
+// --- MongoDB Connection ---
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => {
-        console.log("✅ Connected to MongoDB Atlas");
-    })
-    .catch((error) => {
-        console.log("❌ Connection failed:", error);
-    });
+    .then(() => console.log("✅ Connected to MongoDB Atlas"))
+    .catch((error) => console.log("❌ Connection failed:", error));
 
+// --- MongoDB Schema ---
 const userschema = {
     userName: String,
     email: String,
     password: String,
     role: String,
+};
 
-}
 const User = mongoose.model("Exeluser", userschema);
+
+// --- Routes ---
+
+// Signup
 app.post("/signup", async (req, res) => {
     const { userName, email, password } = req.body;
     try {
         const hash = await bcrypt.hash(password, 10);
         const newUser = new User({
-            userName: userName,
-            email: email,
+            userName,
+            email,
             password: hash,
             role: "user",
         });
         await newUser.save();
         req.session.user = newUser;
-        // Ensure session is saved before sending response
         req.session.save((err) => {
             if (err) {
                 console.error("Session save error:", err);
@@ -98,56 +93,51 @@ app.post("/signup", async (req, res) => {
     }
 });
 
-
-
+// Login
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
-
     try {
-        const foundUser = await User.findOne({ email: email });
-        console.log(foundUser);
-
+        const foundUser = await User.findOne({ email });
         if (foundUser) {
             const isMatch = await bcrypt.compare(password, foundUser.password);
             if (isMatch) {
-                console.log("Login successful");
                 req.session.user = foundUser;
                 res.status(200).json({ message: "Login successful", user: foundUser, session: req.session });
             } else {
-                console.log("Invalid password");
                 res.status(401).json({ message: "Invalid password" });
             }
         } else {
-            console.log("User not found");
             res.status(404).json({ message: "User not found" });
         }
     } catch (error) {
         console.error("Login error:", error);
         res.status(500).json({ message: "Internal server error" });
     }
-
 });
-app.get('/check-session', (req, res) => {
+
+// Session Check
+app.get("/check-session", (req, res) => {
     if (req.session.user) {
         res.json({ sessionActive: true, user: req.session.user });
     } else {
         res.json({ sessionActive: false });
     }
 });
-app.get('/logout', (req, res) => {
+
+// Logout
+app.get("/logout", (req, res) => {
     req.session.destroy((err) => {
         if (err) {
             console.error("Error destroying session:", err);
             return res.status(500).send("Internal Server Error");
         }
-        res.clearCookie('connect.sid'); // Clear the cookie
+        res.clearCookie("connect.sid");
         res.json({ message: "Logout successful", status: 200 });
     });
 });
-app.listen(5000, () => {
-    console.log("server is running on port 5000")
-});
-app.get('/all-users', async (req, res) => {
+
+// Get All Users
+app.get("/all-users", async (req, res) => {
     try {
         const users = await User.find({});
         res.status(200).json(users);
@@ -156,27 +146,32 @@ app.get('/all-users', async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 });
+
+// Change Role to User
 app.post("/toUser", async (req, res) => {
-
-    console.log(req.body)
-    const update = await User.updateOne(req.body, { $set: { role: "user" } })
+    console.log(req.body);
+    const update = await User.updateOne(req.body, { $set: { role: "user" } });
+    console.log(update);
     res.status(200).json({ success: true });
+});
 
-    console.log(update)
-})
+// Change Role to Admin
 app.post("/toAdmin", async (req, res) => {
-
-    console.log(req.body)
-    const update = await User.updateOne(req.body, { $set: { role: "admin" } })
+    console.log(req.body);
+    const update = await User.updateOne(req.body, { $set: { role: "admin" } });
+    console.log(update);
     res.status(200).json({ success: true });
+});
 
-    console.log(update)
-})
+// Delete User
 app.post("/delete", async (req, res) => {
-
-    console.log(req.body)
-    const update = await User.deleteOne(req.body)
+    console.log(req.body);
+    const update = await User.deleteOne(req.body);
+    console.log(update);
     res.status(200).json({ success: true });
+});
 
-    console.log(update)
-})
+// --- Start Server ---
+app.listen(5000, () => {
+    console.log("🚀 Server is running on port 5000");
+});
