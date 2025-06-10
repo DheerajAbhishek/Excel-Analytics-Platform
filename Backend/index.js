@@ -49,7 +49,7 @@ app.use(session({
 }));
 
 // ✅ This line needs path
-app.use(express.static(path.join(__dirname, "FrontEnd")));
+// app.use(express.static(path.join(__dirname, "FrontEnd")));
 app.use(express.static('public'));
 app.use(express.json());
 
