@@ -1,22 +1,23 @@
 const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
+
 const app = express();
 
-// ✅ Only define allowed origins once
+// ✅ ALLOWED ORIGINS — Add your current vercel preview/prod domains
 const allowedOrigins = [
-    "http://localhost:5173", // local dev
-    "https://excel-analytics-platform.vercel.app", // your prod vercel app
-    "https://excel-analytics-platform-6hhl.vercel.app", // example preview domain
+    "http://localhost:5173",
+    "https://excel-analytics-platform.vercel.app",
+    "https://excel-analytics-platform-6hhl.vercel.app", // preview domain
 ];
 
-// ✅ CORS should be added ONCE before all routes/middleware
+// ✅ CORS MIDDLEWARE — Add BEFORE routes
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
             callback(null, true);
         } else {
-            callback(new Error("Not allowed by CORS: " + origin));
+            callback(new Error("CORS error: " + origin));
         }
     },
     credentials: true,
@@ -24,24 +25,32 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// ✅ Required for Express to parse JSON
+// ✅ JSON PARSER
 app.use(express.json());
 
-// ✅ Session config
+// ✅ SESSION CONFIG
 app.use(session({
-    secret: "your-secret",
+    secret: "your-secret", // 🔒 REPLACE this with a strong secret and move to .env
     resave: false,
     saveUninitialized: false,
     cookie: {
         httpOnly: true,
-        secure: true,          // ✅ Required for sameSite: 'none'
-        sameSite: 'none',      // ✅ Required for cross-origin cookies
+        secure: true,         // ✅ HTTPS only — Render supports this
+        sameSite: 'none',     // ✅ Required for cross-origin cookies
         maxAge: 1000 * 60 * 60 // 1 hour
     }
 }));
 
-// ✅ Your routes go here
-app.get('/check-session', (req, res) => {
+// ✅ PRE-FLIGHT OPTIONS
+app.options("*", cors());
+
+// ✅ TEST ROUTE
+app.get("/ping", (req, res) => {
+    res.send("pong");
+});
+
+// ✅ SESSION CHECK ROUTE
+app.get("/check-session", (req, res) => {
     if (req.session.user) {
         res.json({ sessionActive: true, user: req.session.user });
     } else {
@@ -49,10 +58,9 @@ app.get('/check-session', (req, res) => {
     }
 });
 
-// Optional: respond to preflight OPTIONS requests globally
-app.options('*', cors());
-
+// ✅ EXPORT APP
 module.exports = app;
+
 
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static(path.join(__dirname, "FrontEnd")));
