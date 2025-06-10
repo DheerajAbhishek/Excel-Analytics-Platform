@@ -1,16 +1,22 @@
 const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const path = require("path"); // ✅ Added!
+
 const app = express();
 
+require('dotenv').config();
+
+// CORS configuration
 const allowedOrigins = [
     "http://localhost:5173",
     "https://excel-analytics-platform.vercel.app",
-    "https://excel-analytics-platform-6hhl.vercel.app", // this is your preview domain
+    "https://excel-analytics-platform-6hhl.vercel.app",
 ];
 
-// ✅ Apply CORS early
-app.use(cors({
+const corsOptions = {
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
             callback(null, true);
@@ -21,41 +27,28 @@ app.use(cors({
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+};
 
-// ✅ Handle preflight (OPTIONS) requests explicitly (recommended)
-app.options("*", cors({
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
-            callback(null, true);
-        } else {
-            callback(new Error("CORS error: " + origin));
-        }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
-// ✅ Express JSON parser
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// ✅ Session config
+// Session configuration
 app.use(session({
     secret: "your-secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
         httpOnly: true,
-        secure: true,
+        secure: true, // Required for cross-origin cookies
         sameSite: 'none',
-        maxAge: 1000 * 60 * 60
-    }
+        maxAge: 1000 * 60 * 60,
+    },
 }));
 
-
-
-app.use(express.urlencoded({ extended: true }))
+// ✅ This line needs path
 app.use(express.static(path.join(__dirname, "FrontEnd")));
 app.use(express.static('public'));
 app.use(express.json());
