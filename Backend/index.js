@@ -55,6 +55,8 @@ const mongoose = require("mongoose");
 const { stringify } = require("querystring");
 const { isNull } = require("util");
 const { stat } = require("fs");
+require('dotenv').config();
+
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         console.log("✅ Connected to MongoDB Atlas");
