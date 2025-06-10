@@ -1,3 +1,6 @@
+# Open the live project from this link (deployed in vercel and render)
+https://excel-analytics-platform-6hhl.vercel.app/
+
 # How to run the project
 
 ## Available Scripts
