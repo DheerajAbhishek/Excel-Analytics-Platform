@@ -1,15 +1,35 @@
 const express = require("express");
 const app = express();
 const path = require("path")
-const cors = require("cors");
+
 const bcrypt = require("bcryptjs");
 const session = require("express-session");
 
 
 
+const cors = require("cors");
+
+const allowedOrigins = [
+    "http://localhost:5173", // for local dev
+    "https://excel-analytics-platform.vercel.app", // production
+];
+
+// Optional: allow any Vercel preview URLs (wildcard match)
+const dynamicOrigin = (origin, callback) => {
+    if (
+        !origin || // allow same-origin requests
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app") // allow all Vercel preview domains
+    ) {
+        callback(null, true);
+    } else {
+        callback(new Error("Not allowed by CORS: " + origin));
+    }
+};
+
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://excel-analytics-platform-6hhl-83wn5r5tf.vercel.app'],
-    credentials: true
+    origin: dynamicOrigin,
+    credentials: true,
 }));
 
 
