@@ -15,7 +15,7 @@ export default function AdminDash() {
 
     const fetchAllUsers = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/all-users');
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/all-users`);
             setAllUsers(response.data);
         } catch (error) {
             console.error("Error fetching all users", error);
@@ -25,7 +25,7 @@ export default function AdminDash() {
     useEffect(() => {
         const checkSession = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/check-session', {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/check-session`, {
                     withCredentials: true
                 });
 
@@ -48,7 +48,7 @@ export default function AdminDash() {
     const toUser = async (username) => {
         if (window.confirm(`Are you sure you want to change ${username} to user?`)) {
             try {
-                await axios.post('http://localhost:5000/toUser', { userName: username }, { withCredentials: true });
+                await axios.post(`${import.meta.env.VITE_API_URL}/toUser`, { userName: username }, { withCredentials: true });
                 alert(`${username} is now a user.`);
                 fetchAllUsers();
             } catch (error) {
@@ -61,7 +61,7 @@ export default function AdminDash() {
     const toAdmin = async (username) => {
         if (window.confirm(`Are you sure you want to change ${username} to admin?`)) {
             try {
-                await axios.post('http://localhost:5000/toAdmin', { userName: username }, { withCredentials: true });
+                await axios.post(`${import.meta.env.VITE_API_URL}/toAdmin`, { userName: username }, { withCredentials: true });
                 alert(`${username} is now an admin.`);
                 fetchAllUsers();
             } catch (error) {
@@ -78,7 +78,7 @@ export default function AdminDash() {
         }
         if (window.confirm(`Are you sure you want to delete user: ${username}?`)) {
             try {
-                await axios.post('http://localhost:5000/delete', { userName: username }, { withCredentials: true });
+                await axios.post(`${import.meta.env.VITE_API_URL}/delete`, { userName: username }, { withCredentials: true });
                 alert(`User ${username} deleted.`);
                 fetchAllUsers();
             } catch (error) {

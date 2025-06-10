@@ -10,7 +10,7 @@ export default function Sidebar() {
 
     const logout = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/logout', { withCredentials: true });
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/logout`, { withCredentials: true });
             if (response.status === 200) {
                 console.log("Logout successful");
                 navigate('/');

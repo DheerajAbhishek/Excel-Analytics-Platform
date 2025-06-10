@@ -22,7 +22,7 @@ export default function Signup() {
     const handleSubmit = async (e) => {
         e.preventDefault(); // ✅ Prevent page reload
         try {
-            const response = await axios.post('http://localhost:5000/signup', formData, { withCredentials: true });
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/signup`, formData, { withCredentials: true });
             console.log(response.data); // You can show a success message here
             setUser(response.data.user); // Set the user data in state
             navigate('/Dashboard'); // Redirect to the dashboard after successful signup

@@ -23,7 +23,7 @@ export default function Login() {
         e.preventDefault(); // Prevent page refresh on form submission
         try {
 
-            const response = await axios.post('http://localhost:5000/login', formData, { withCredentials: true });
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/login`, formData, { withCredentials: true });
 
             setUser(response.data.user); // Set the user data in state
             if (response.status === 200) {
