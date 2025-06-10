@@ -34,22 +34,24 @@ app.use(cors({
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 
+app.set("trust proxy", 1); // Needed when using Render or any proxy
+
 app.use(session({
-    secret: "your-secret", // or use process.env.SESSION_SECRET
+    secret: "your-secret", // use process.env.SECRET in production
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_URI,
         ttl: 60 * 60, // 1 hour
-        autoRemove: 'native', // Let MongoDB clean expired sessions
     }),
     cookie: {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: true, // must be true when using HTTPS (Render uses HTTPS)
+        sameSite: "none", // "none" is needed for cross-origin with HTTPS
         maxAge: 1000 * 60 * 60, // 1 hour
     }
 }));
+
 
 // --- Middleware ---
 app.use(express.urlencoded({ extended: true }));
