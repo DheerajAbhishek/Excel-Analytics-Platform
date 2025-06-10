@@ -8,9 +8,10 @@ const session = require("express-session");
 
 
 app.use(cors({
-    origin: "http://localhost:5173", // your React app
+    origin: ['http://localhost:5173', 'https://excel-analytics-platform-6hhl-83wn5r5tf.vercel.app'],
     credentials: true
 }));
+
 
 app.use(session({
     secret: "your-secret",
