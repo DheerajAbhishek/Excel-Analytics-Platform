@@ -1,17 +1,15 @@
 const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
-
 const app = express();
 
-// ✅ ALLOWED ORIGINS — Add your current vercel preview/prod domains
 const allowedOrigins = [
     "http://localhost:5173",
     "https://excel-analytics-platform.vercel.app",
-    "https://excel-analytics-platform-6hhl.vercel.app", // preview domain
+    "https://excel-analytics-platform-6hhl.vercel.app", // this is your preview domain
 ];
 
-// ✅ CORS MIDDLEWARE — Add BEFORE routes
+// ✅ Apply CORS early
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
@@ -25,41 +23,36 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// ✅ JSON PARSER
+// ✅ Handle preflight (OPTIONS) requests explicitly (recommended)
+app.options("*", cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+            callback(null, true);
+        } else {
+            callback(new Error("CORS error: " + origin));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// ✅ Express JSON parser
 app.use(express.json());
 
-// ✅ SESSION CONFIG
+// ✅ Session config
 app.use(session({
-    secret: "your-secret", // 🔒 REPLACE this with a strong secret and move to .env
+    secret: "your-secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
         httpOnly: true,
-        secure: true,         // ✅ HTTPS only — Render supports this
-        sameSite: 'none',     // ✅ Required for cross-origin cookies
-        maxAge: 1000 * 60 * 60 // 1 hour
+        secure: true,
+        sameSite: 'none',
+        maxAge: 1000 * 60 * 60
     }
 }));
 
-// ✅ PRE-FLIGHT OPTIONS
-app.options("*", cors());
-
-// ✅ TEST ROUTE
-app.get("/ping", (req, res) => {
-    res.send("pong");
-});
-
-// ✅ SESSION CHECK ROUTE
-app.get("/check-session", (req, res) => {
-    if (req.session.user) {
-        res.json({ sessionActive: true, user: req.session.user });
-    } else {
-        res.json({ sessionActive: false });
-    }
-});
-
-// ✅ EXPORT APP
-module.exports = app;
 
 
 app.use(express.urlencoded({ extended: true }))
