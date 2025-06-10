@@ -1,60 +1,58 @@
 const express = require("express");
-const app = express();
-const path = require("path")
-
-const bcrypt = require("bcryptjs");
-const session = require("express-session");
-
-
-
 const cors = require("cors");
+const session = require("express-session");
+const app = express();
+
+// ✅ Only define allowed origins once
 const allowedOrigins = [
-    "http://localhost:5173", // for local dev
-    "https://excel-analytics-platform.vercel.app", // production
+    "http://localhost:5173", // local dev
+    "https://excel-analytics-platform.vercel.app", // your prod vercel app
+    "https://excel-analytics-platform-6hhl.vercel.app", // example preview domain
 ];
 
+// ✅ CORS should be added ONCE before all routes/middleware
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
             callback(null, true);
         } else {
-            callback(new Error("Not allowed by CORS"));
+            callback(new Error("Not allowed by CORS: " + origin));
         }
     },
-    credentials: true // 👈 This is what allows the session cookie to be sent
-}));
-
-
-// Optional: allow any Vercel preview URLs (wildcard match)
-const dynamicOrigin = (origin, callback) => {
-    if (
-        !origin || // allow same-origin requests
-        allowedOrigins.includes(origin) ||
-        origin.endsWith(".vercel.app") // allow all Vercel preview domains
-    ) {
-        callback(null, true);
-    } else {
-        callback(new Error("Not allowed by CORS: " + origin));
-    }
-};
-
-app.use(cors({
-    origin: dynamicOrigin,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+// ✅ Required for Express to parse JSON
+app.use(express.json());
 
+// ✅ Session config
 app.use(session({
     secret: "your-secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
         httpOnly: true,
-        secure: false, // true only in production with HTTPS
-        sameSite: 'lax', // or 'none' if secure:true and HTTPS
+        secure: true,          // ✅ Required for sameSite: 'none'
+        sameSite: 'none',      // ✅ Required for cross-origin cookies
         maxAge: 1000 * 60 * 60 // 1 hour
     }
 }));
+
+// ✅ Your routes go here
+app.get('/check-session', (req, res) => {
+    if (req.session.user) {
+        res.json({ sessionActive: true, user: req.session.user });
+    } else {
+        res.json({ sessionActive: false });
+    }
+});
+
+// Optional: respond to preflight OPTIONS requests globally
+app.options('*', cors());
+
+module.exports = app;
 
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static(path.join(__dirname, "FrontEnd")));
