@@ -12,8 +12,10 @@ require("dotenv").config();
 // -------------------- CORS Setup --------------------
 const allowedOrigins = [
     "http://localhost:5173",
-    "https://excel-analytics-platform.vercel.app",
+    "https://excel-analytics-platform-6hhl.vercel.app", // ✅ exact domain
+    "https://excel-analytics-platform.vercel.app",       // optional if used elsewhere
 ];
+
 
 const dynamicOrigin = (origin, callback) => {
     if (
