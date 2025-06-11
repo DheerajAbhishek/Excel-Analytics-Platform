@@ -82,19 +82,24 @@ const User = mongoose.model("Exeluser", userSchema);
 app.post("/signup", async (req, res) => {
     const { userName, email, password } = req.body;
     try {
-        const hash = await bcrypt.hash(password, 10);
-        const newUser = new User({
-            userName,
-            email,
-            password: hash,
-            role: "user",
-        });
-        await newUser.save();
-        req.session.user = newUser;
-        req.session.save((err) => {
-            if (err) return res.status(500).json({ message: "Session save failed" });
-            res.json({ message: "User Created", user: newUser, session: req.session });
-        });
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            res.status(409).json({ message: "User Already exists" });
+        } else {
+            const hash = await bcrypt.hash(password, 10);
+            const newUser = new User({
+                userName,
+                email,
+                password: hash,
+                role: "user",
+            });
+            await newUser.save();
+            req.session.user = newUser;
+            req.session.save((err) => {
+                if (err) return res.status(500).json({ message: "Session save failed" });
+                res.json({ message: "User Created", user: newUser, session: req.session });
+            });
+        }
     } catch (error) {
         res.status(500).json({ message: "Error creating user", error });
     }

@@ -18,16 +18,26 @@ export default function Signup() {
         }));
     };
     const { setUser } = useContext(UserContext); // Access the setUser function from UserContext
-
     const handleSubmit = async (e) => {
         e.preventDefault(); // ✅ Prevent page reload
+
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/signup`, formData, { withCredentials: true });
-            console.log(response.data); // You can show a success message here
-            setUser(response.data.user); // Set the user data in state
-            navigate('/Dashboard'); // Redirect to the dashboard after successful signup
+            const response = await axios.post(
+                `${import.meta.env.VITE_API_URL}/signup`,
+                formData,
+                { withCredentials: true }
+            );
+
+            console.log(response.data); // ✅ Successful signup
+            setUser(response.data.user);
+            navigate('/Dashboard');
         } catch (error) {
-            console.error('Signup error:', error); // You can show an error message to the user
+            if (error.response && error.response.status === 409) {
+                alert("User already exists. Please login.");
+            } else {
+                console.error('Signup error:', error);
+                alert("An error occurred. Please try again.");
+            }
         }
     };
 
